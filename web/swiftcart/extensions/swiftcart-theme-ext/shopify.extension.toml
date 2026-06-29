@@ -1,0 +1,14 @@
+api_version = "2025-01"
+
+[[extensions]]
+name = "SwiftCart"
+handle = "swiftcart-theme-ext"
+uid = "14bcfc6e-3908-a9d1-5896-1fd5de18b2e2dd0ca5ad"
+type = "theme"
+
+  [extensions.capabilities]
+  block = true
+
+  [[extensions.targeting]]
+  target = "body"
+  block = "blocks/cart_drawer/cart_drawer.liquid"

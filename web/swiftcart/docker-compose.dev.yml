@@ -1,0 +1,38 @@
+# SwiftCart — Local Development Docker Compose
+# Provides PostgreSQL and Redis for production-like local development.
+# SQLite is used by default (no Docker required).
+# Switch to these when testing with production DB.
+
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: swiftcart-db
+    environment:
+      POSTGRES_DB: swiftcart
+      POSTGRES_USER: swiftcart
+      POSTGRES_PASSWORD: swiftcart_local_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U swiftcart"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: swiftcart-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:

@@ -1,0 +1,235 @@
+{% comment %}
+  SwiftCart — Slide Cart & AOV Booster
+  Theme App Extension — App Block
+  Renders the cart drawer widget with merchant-configured settings
+{% endcomment %}
+
+{{ 'swiftcart-drawer.css' | asset_url | stylesheet_tag }}
+
+<script>
+  window.__SWIFTCART_CONFIG__ = {
+    shopDomain: {{ shop.permanent_domain | json }},
+    apiBase: {{ block.settings.api_base_url | json }},
+    currency: {{ cart.currency.symbol | json }},
+    settings: {
+      drawerPosition: {{ block.settings.drawer_position | json }},
+      drawerWidthPx: {{ block.settings.drawer_width | json }},
+      primaryColor: {{ block.settings.primary_color | json }},
+      buttonColor: {{ block.settings.button_color | json }},
+      buttonTextColor: {{ block.settings.button_text_color | json }},
+      backgroundColor: {{ block.settings.background_color | json }},
+      overlayOpacity: {{ block.settings.overlay_opacity | divided_by: 100.0 | json }},
+      borderRadius: {{ block.settings.border_radius | json }},
+      fontFamily: {{ block.settings.font_family | json }},
+      cartTitle: {{ block.settings.cart_title | json }},
+      announcementText: {{ block.settings.announcement_text | json }},
+      showProgressBar: {{ block.settings.show_progress_bar | json }},
+      showCountdown: {{ block.settings.show_countdown | json }},
+      showStickyAtc: {{ block.settings.show_sticky_atc | json }},
+      showCouponField: {{ block.settings.show_coupon_field | json }},
+      showUpsells: {{ block.settings.show_upsells | json }},
+      showFreeGifts: {{ block.settings.show_free_gifts | json }},
+      showSocialProof: {{ block.settings.show_social_proof | json }},
+      showLowStock: {{ block.settings.show_low_stock | json }},
+      countdownMinutes: {{ block.settings.countdown_minutes | json }},
+      countdownMessage: {{ block.settings.countdown_message | json }}
+    },
+    milestones: []
+  };
+</script>
+
+<script src="{{ 'swiftcart-drawer.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "SwiftCart Drawer",
+  "target": "body",
+  "stylesheet": "swiftcart-drawer.css",
+  "settings": [
+    {
+      "type": "header",
+      "content": "🛒 SwiftCart Configuration"
+    },
+    {
+      "type": "text",
+      "id": "api_base_url",
+      "label": "SwiftCart API Base URL",
+      "info": "Your SwiftCart backend URL (e.g. https://your-app.fly.dev)"
+    },
+    {
+      "type": "header",
+      "content": "Cart Drawer Design"
+    },
+    {
+      "type": "select",
+      "id": "drawer_position",
+      "label": "Drawer Position",
+      "options": [
+        { "value": "right", "label": "Right Side" },
+        { "value": "left", "label": "Left Side" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "range",
+      "id": "drawer_width",
+      "label": "Drawer Width (px)",
+      "min": 360,
+      "max": 520,
+      "step": 10,
+      "default": 420,
+      "unit": "px"
+    },
+    {
+      "type": "color",
+      "id": "primary_color",
+      "label": "Primary Accent Color",
+      "default": "#6C5CE7"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Checkout Button Color",
+      "default": "#00B894"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button Text Color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Drawer Background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay Opacity",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 50,
+      "unit": "%"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Border Radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "default": 12,
+      "unit": "px"
+    },
+    {
+      "type": "select",
+      "id": "font_family",
+      "label": "Font Family",
+      "options": [
+        { "value": "Inter", "label": "Inter" },
+        { "value": "Roboto", "label": "Roboto" },
+        { "value": "Poppins", "label": "Poppins" },
+        { "value": "Outfit", "label": "Outfit" },
+        { "value": "system-ui", "label": "System Default" }
+      ],
+      "default": "Inter"
+    },
+    {
+      "type": "header",
+      "content": "Cart Header"
+    },
+    {
+      "type": "text",
+      "id": "cart_title",
+      "label": "Cart Title",
+      "default": "Your Cart"
+    },
+    {
+      "type": "text",
+      "id": "announcement_text",
+      "label": "Announcement Banner Text",
+      "info": "Leave empty to hide. Example: Free shipping on orders over ₹999!"
+    },
+    {
+      "type": "header",
+      "content": "Features"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_progress_bar",
+      "label": "Show Progress Bar",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_upsells",
+      "label": "Show Upsell Recommendations",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_coupon_field",
+      "label": "Show Coupon Code Field",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_free_gifts",
+      "label": "Show Free Gifts",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_low_stock",
+      "label": "Show Low Stock Warnings",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social_proof",
+      "label": "Show Social Proof",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Countdown Timer"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_countdown",
+      "label": "Enable Countdown Timer",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "countdown_minutes",
+      "label": "Timer Duration (minutes)",
+      "min": 5,
+      "max": 60,
+      "step": 5,
+      "default": 15,
+      "unit": "min"
+    },
+    {
+      "type": "text",
+      "id": "countdown_message",
+      "label": "Timer Message",
+      "default": "Checkout within {time} to get free shipping today!",
+      "info": "Use {time} as placeholder for the countdown"
+    },
+    {
+      "type": "header",
+      "content": "Mobile"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sticky_atc",
+      "label": "Show Sticky Add-to-Cart Bar (Mobile)",
+      "default": true
+    }
+  ]
+}
+{% endschema %}
