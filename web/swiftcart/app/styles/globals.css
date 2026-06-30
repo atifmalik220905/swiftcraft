@@ -1,0 +1,120 @@
+/* ═══════════════════════════════════════════════════════════════
+   SwiftCart — Global Stylesheet (Admin Dashboard)
+   Design System: SwiftCart AOV Booster (Stitch)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Google Fonts ─── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+/* ─── Material Symbols ─── */
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Base Layer ─── */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-on-surface min-h-screen;
+  }
+
+  /* Material Symbols default settings */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+}
+
+/* ─── Component Layer ─── */
+@layer components {
+  /* Glass Card — Stitch signature card style */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 1);
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c5c5d4;
+    border-radius: 10px;
+  }
+
+  /* ─── Navigation Items ─── */
+  .nav-item {
+    @apply flex items-center gap-4 px-4 py-2 rounded-lg transition-all duration-200;
+  }
+  .nav-item--active {
+    @apply bg-primary-container text-on-primary-container font-bold;
+  }
+  .nav-item--inactive {
+    @apply text-on-surface-variant hover:bg-surface-container-high;
+  }
+
+  /* ─── KPI Card ─── */
+  .kpi-card {
+    @apply glass-card p-4 rounded-xl flex flex-col justify-between h-32
+           hover:shadow-lg transition-all duration-300;
+  }
+  .kpi-card--featured {
+    @apply border-2 border-primary-container/20 bg-primary-container/5;
+  }
+
+  /* ─── Section Card ─── */
+  .section-card {
+    @apply bg-surface-container-lowest border border-outline-variant
+           rounded-xl p-4 md:p-6 shadow-sm;
+  }
+
+  /* ─── Badge / Chip ─── */
+  .badge-success {
+    @apply text-secondary font-semibold text-xs bg-secondary-container
+           px-2 py-0.5 rounded-full;
+  }
+  .badge-primary {
+    @apply text-on-primary font-semibold text-xs bg-primary-container
+           px-2 py-0.5 rounded-full;
+  }
+  .badge-urgency {
+    @apply text-on-tertiary font-semibold text-xs bg-tertiary-container
+           px-2 py-0.5 rounded-full;
+  }
+
+  /* ─── Button Styles ─── */
+  .btn-primary {
+    @apply px-4 py-2 bg-primary text-on-primary rounded-lg font-bold
+           hover:opacity-90 active:scale-95 transition-all duration-150;
+  }
+  .btn-secondary {
+    @apply px-4 py-2 border border-primary text-primary rounded-lg font-bold
+           hover:bg-surface-container-low active:scale-95 transition-all duration-150;
+  }
+  .btn-icon {
+    @apply hover:bg-surface-container-low transition-colors p-2 rounded-full
+           active:scale-95 duration-150;
+  }
+
+  /* ─── Floating Action Button ─── */
+  .fab {
+    @apply fixed w-14 h-14 bg-primary text-on-primary rounded-full shadow-lg
+           flex items-center justify-center hover:scale-110 active:scale-95
+           transition-transform z-40;
+  }
+}
+
+/* ─── Utility Layer ─── */
+@layer utilities {
+  /* Safe area padding for mobile bottom nav */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
