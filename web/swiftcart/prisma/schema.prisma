@@ -1,0 +1,240 @@
+// SwiftCart Prisma Schema
+// Local dev: SQLite | Production: PostgreSQL (swap datasource provider)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Shopify Session (required by @shopify/shopify-app-session-storage-prisma) ───
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+// ─── Merchant ───
+model Merchant {
+  id                String   @id @default(uuid())
+  shopDomain        String   @unique // e.g. storename.myshopify.com
+  accessToken       String   // Shopify OAuth token (encrypt in production)
+  planTier          String   @default("starter") // starter | growth | scale | enterprise
+  monthlyOrderCount Int      @default(0)
+  isActive          Boolean  @default(true)
+  installedAt       DateTime @default(now())
+  trialEndsAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  cartSettings      CartSettings?
+  upsellRules       UpsellRule[]
+  progressBarRules  ProgressBarRule[]
+  freeGiftRules     FreeGiftRule[]
+  countdownSettings CountdownSettings?
+  fraudSettings     FraudSettings?
+  cartEvents        CartEvent[]
+  discounts         Discount[]
+  volumeDiscountRules VolumeDiscountRule[]
+}
+
+// ─── Cart Drawer Settings ───
+model CartSettings {
+  id               String  @id @default(uuid())
+  merchantId       String  @unique
+  merchant         Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  drawerPosition   String  @default("right") // right | left
+  drawerWidthPx    Int     @default(420)
+  primaryColor     String  @default("#6C5CE7") // main accent
+  buttonColor      String  @default("#00B894") // CTA button
+  buttonTextColor  String  @default("#FFFFFF")
+  backgroundColor  String  @default("#FFFFFF")
+  overlayOpacity   Float   @default(0.5)
+  borderRadius     Int     @default(12)
+  fontFamily       String  @default("Inter")
+  headerLogoUrl    String?
+  bannerImageUrl   String?
+
+  showProgressBar  Boolean @default(true)
+  showCountdown    Boolean @default(false)
+  showStickyAtc    Boolean @default(true)
+  showCouponField  Boolean @default(true)
+  showUpsells      Boolean @default(true)
+  showFreeGifts    Boolean @default(true)
+  showSocialProof  Boolean @default(false)
+  showLowStock     Boolean @default(true)
+
+  customCss        String  @default("")
+  customHtmlTop    String  @default("")
+  customHtmlBottom String  @default("")
+
+  announcementText String  @default("")
+  cartTitle        String  @default("Your Cart")
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// ─── Upsell Rules ───
+model UpsellRule {
+  id              String   @id @default(uuid())
+  merchantId      String
+  merchant        Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  ruleName        String   @default("Untitled Rule")
+  triggerType     String   // product | collection | cart_value | tag | city
+  triggerValue    String   // JSON string: { productIds: [], minValue: 0, maxValue: 0, tags: [], cities: [] }
+  upsellProductIds String  // JSON string: array of Shopify product GIDs
+  displayType     String   @default("carousel") // carousel | grid | single
+  priority        Int      @default(0) // lower = higher priority
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  cartEvents      CartEvent[]
+}
+
+// ─── Progress Bar Rules (Milestones) ───
+model ProgressBarRule {
+  id              String   @id @default(uuid())
+  merchantId      String
+  merchant        Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  milestoneOrder  Int      @default(1) // 1, 2, or 3
+  rewardType      String   // free_shipping | free_gift | discount
+  thresholdAmount Float    // cart value to unlock
+  messageBefore   String   @default("Add ₹{remaining} more to unlock {reward}!")
+  messageAfter    String   @default("You unlocked {reward}! 🎉")
+  rewardValue     String   @default("") // discount code or product ID
+  barFillColor    String   @default("#00B894")
+  barBgColor      String   @default("#E0E0E0")
+  showShimmer     Boolean  @default(true)
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([merchantId, milestoneOrder])
+}
+
+// ─── Free Gift Rules ───
+model FreeGiftRule {
+  id              String   @id @default(uuid())
+  merchantId      String
+  merchant        Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  giftProductId   String   // Shopify product GID
+  giftProductTitle String  @default("")
+  thresholdAmount Float    // cart value to unlock
+  allowChoice     Boolean  @default(false) // let customer choose from a gift collection
+  choiceCollectionId String? // Shopify collection GID
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ─── Countdown Timer Settings ───
+model CountdownSettings {
+  id              String   @id @default(uuid())
+  merchantId      String   @unique
+  merchant        Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  enabled         Boolean  @default(false)
+  durationMinutes Int      @default(15) // session-based timer
+  resetType       String   @default("session") // session | daily
+  message         String   @default("Checkout within {time} to get free shipping today!")
+  textColor       String   @default("#E74C3C")
+  backgroundColor String   @default("#FFF3F3")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ─── Fraud / RTO Settings ───
+model FraudSettings {
+  id                   String   @id @default(uuid())
+  merchantId           String   @unique
+  merchant             Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  enablePincodeBlock   Boolean  @default(false)
+  blockedPincodes      String   @default("[]") // JSON array of pincode strings
+  enableCodOtp         Boolean  @default(false)
+  codOtpThreshold      Float    @default(5000) // require OTP above this cart value
+  hideCodAbove         Float?   // hide COD option above this value
+  enableAddressCheck   Boolean  @default(false)
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+// ─── Cart Events (Analytics) ───
+model CartEvent {
+  id              String   @id @default(uuid())
+  merchantId      String
+  merchant        Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  sessionId       String   // anonymous browser session
+  eventType       String   // cart_open | upsell_click | upsell_add | checkout | gift_unlocked | coupon_applied
+  cartValueBefore Float    @default(0)
+  cartValueAfter  Float    @default(0)
+  upsellRuleId    String?
+  upsellRule      UpsellRule? @relation(fields: [upsellRuleId], references: [id])
+  deviceType      String   @default("desktop") // mobile | desktop | tablet
+  occurredAt      DateTime @default(now())
+}
+
+// ─── Custom Discount Coupons ───
+model Discount {
+  id              String   @id @default(uuid())
+  merchantId      String
+  merchant        Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  code            String   // Coupon code, e.g. "WELCOME10" (scoped by merchant)
+  discountType    String   // percentage | fixed_amount | free_shipping
+  discountValue   Float    // e.g. 10.0 or 150.0
+  minCartAmount   Float    @default(0) // Minimum cart value required to apply
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([merchantId, code])
+}
+
+// ─── Volume / Quantity Discounts ───
+model VolumeDiscountRule {
+  id              String   @id @default(uuid())
+  merchantId      String
+  merchant        Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  ruleName        String   @default("Volume Discount")
+  productId       String   @default("all") // Shopify product GID, or "all"
+  quantity        Int      @default(2) // minimum quantity required, e.g. 2
+  discountType    String   @default("percentage") // percentage | fixed_amount
+  discountValue   Float    @default(10.0) // e.g. 10% or 100 Rs
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

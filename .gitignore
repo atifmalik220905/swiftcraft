@@ -1,0 +1,36 @@
+# Node dependencies
+node_modules/
+**/node_modules/
+
+# Local env files
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Build directories
+build/
+**/build/
+.react-router/
+**/.react-router/
+.shopify/
+**/.shopify/
+.shopify.lock
+**/.shopify.lock
+dist/
+**/dist/
+
+# OS files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Agent files & local configs
+.gemini/
+.agents/
+.cursor/
+**/.gemini/
+**/.agents/
+**/.cursor/
+db.sqlite
+*.sqlite-journal
